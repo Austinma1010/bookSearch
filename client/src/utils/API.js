@@ -1,4 +1,6 @@
 // route to get logged in user's info (needs the token)
+import { useQuery, useMutation } from '@apollo/client';
+
 export const getMe = (token) => {
   return fetch('/api/users/me', {
     headers: {

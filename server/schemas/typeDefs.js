@@ -1,3 +1,4 @@
+
 const typeDefs = `
 type User {
     _id: ID!
@@ -37,13 +38,13 @@ type AuthPayload {
 
  type Query {
     users: [User]
-    user(_id: ID!): [User]
+    user(_id: ID!): User
  }
 
  type Mutation {
-    createUser(username: String!, email: String!, password: String!): User!
+    createUser(username: String!, email: String!, password: String!): User
     addBook(userId: ID!, book: BookInput!): User
-    login(input: LoginInput!): AuthPayload!
+    login(email: String!, password: String!): AuthPayload!
  }
 `;
 

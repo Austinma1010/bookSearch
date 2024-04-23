@@ -1,5 +1,5 @@
 const { User, Book } = require('../models');
-
+const { signToken } = require('../utils/auth');
 const resolvers = {
     Query: {
         users: async () => {
@@ -11,8 +11,11 @@ const resolvers = {
             }
         },
         user: async (parent, { _id }) => {
+            console.log(_id);
+            const id = _id;
             try {
-                const user = await User.findById(_id);
+                const user = await User.findOne({ _id: id })
+                console.log(user);
                 return user;
             } catch(err) {
                 console.error(err);
@@ -21,31 +24,43 @@ const resolvers = {
     },
 
     Mutation: {
-        login: async (_, { input }) => {
-            const { email, password } = input;
+        login: async (_, { email, password }) => {
+            
             const user = await User.findOne({ $or: [{ email }] });
             if (!user) {
               return res.status(400).json({ message: "Can't find this user" });
               }
 
-            const correctPw = await user.isCorrectPassword(body.password);
+            const correctPw = await user.isCorrectPassword(password);
 
             if (!correctPw) {
               return res.status(400).json({ message: 'Wrong password!' });
                }
             const token = signToken(user);
-            res.json({ token, user });
+            return { token, user };
         },
-        createUser: async (_, { input }) => {
+        createUser: async (parent, args) => {
+            console.log(args);
             try {
                 console.log("about to create");
-                const newUser = await User.create(input);
+                const newUser = await User.create(args);
                 console.log("Created");
                 const token = signToken(newUser);
-                res.json({ token, newUser });
+                return { token, newUser };
             } catch(err) {
                 console.error(err);
+            }
+        },
+        addBook: async (parent, { userId, book }) => {
+            try {
+                const user = await User.findOne({ _id: userId });
+                user.savedBooks.push(book);
+                await user.save();
+                return user;
+            } catch(err) {
+                console.log(err);
             }
         }
     }
 }
+module.exports = resolvers;
